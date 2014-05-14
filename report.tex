@@ -183,9 +183,9 @@ Another feature we considered but did not implement is rate limiting; that is, i
 Furthermore, although our implementation is secure from replay attacks, it is still vulnerable to session hijacking if the website is not using HTTPS. This type of attack occurs when a malicious user steals the session ID from a legitimate user and uses sets it in his own cookie to impersonate the victim.
 
 
-\begin{figure}[h]
+
 \small
-\centering
+\begin{center}
     \begin{tabular}{|  p{6cm} | p{5cm} | p{5cm} |}
     \hline
     Technology & Pros & Cons \\ \hline
@@ -274,8 +274,8 @@ Furthermore, although our implementation is secure from replay attacks, it is st
     \\ \hline
     
     \end{tabular}
-\caption{Technology options.}
-\end{figure}
+\end{center}
+
 \normalsize
 
 We chose JavaScript as it integrates most seamlessly and requires the least work from the user. Javascript, although some users disable JavaScript with applications like NoScript. According to Yahoo in 2010, around $2\%$ of users have JavaScript disabled. 
