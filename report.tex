@@ -34,7 +34,7 @@
 
 % Title
 { \huge \bfseries NARWHAL \\[0.4cm] }
-{\Large An Implmentation of Zero Knowledge Authentication}\\[0.5cm]
+{\Large An Implementation of Zero Knowledge Authentication}\\[0.5cm]
 
 
 % Author and supervisor
@@ -74,7 +74,7 @@ In this paper, we discuss our implementation of an alternative login system for 
 
 Zero knowledge authentication schemes explore the use of zero knowledge interactive proofs as an alternative model for user authentication.  There are several potential weaknesses of the current canonical model of web authentication, and zero knowledge authentication schemes solve some of these problems cleanly.  We have implemented such a scheme as a system called NARWHAL; our server runs Ruby on Rails and we use JavaScript for client-side computation.
 
-In the course of implementing NARWHAL, we determined that a zero knowledge authentication schems and  most challenge-response authentication schemes could be implemented with little detriment to the user experience.  Still, we also discovered several obstacles that impeded our implementation.  In particular, NARWHAL relies heavily on users having JavaScript enabled in their browsers; even then, we lacked the desired functionality for some cryptographic operations due to a lack of available JavaScript libraries.  In this paper, we outline the system we implemented on both a theoretical and practical level, discussing both advantages and disadvantages of zero knowledge authentication.
+In the course of implementing NARWHAL, we determined that zero knowledge authentication schemes and  most challenge-response authentication schemes could be implemented with little detriment to the user experience.  Still, we also discovered several obstacles that impeded our implementation.  In particular, NARWHAL relies heavily on users having JavaScript enabled in their browsers; even then, we lacked the desired functionality for some cryptographic operations due to a lack of available JavaScript libraries.  In this paper, we outline the system we implemented on both a theoretical and practical level, discussing both advantages and disadvantages of zero knowledge authentication.
 
 
 \section{Issues with the Current Hashed-Password System}
@@ -85,7 +85,11 @@ The first major vector is brute-force hash cracking\cite{Lum}.  In this attack, 
 
 A second possible attack is wire sniffing, where a malicious entity listens in on the client's connection to the server and reads the password that's sent over the network\cite{Lum}. Most large sites use SSL for authentication, which encrypts this connection and makes it more difficult for listeniers to read any data; however, some still do not. For example, as of May 2014, the Forbes website (\url{http://www.forbes.com/}) does not log in over HTTPS. If a user were to authenticate with a server over HTTP (not HTTPS) on an unsecured network, such as public Wi-Fi, it would be trivial for an attacker to gain access to the password by sniffing the completely unencrypted packets being sent on the network. 
 
+<<<<<<< HEAD
 Furthermore, there have been several high-profile password thefts in recent years where servers stored passwords insecurely (in particular, in plain text or hashed without salting) and were subsequently compromised.  Such thefts are the most publicized form of large-scale password leakage.  When a user sends a password in plaintext and the server does not store this password securely, such catastrophes may occur.  For instance, in January 2013, the servers of dating network Cupid Media were compromised, resulting in the theft of a staggering 42 million unencrypted passwords.  \cite{Donohue}
+=======
+Additionally, several high-profile password thefts in recent years have occurred when servers stored passwords insecurely (in particular, in plain text or hashed without salting) and then were compromised.  This has been the most publicized form of large-scale password leakage.  When a user sends a password in plaintext and the server does not store this password securely, such catastrophic scenarios may occur.  For example, in January 2013, the servers of dating network Cupid Media were compromised, resulting in the theft of a staggering 42 million unencrypted passwords.  \cite{Donohue}
+>>>>>>> 2bea54e356f94a0eb3f8d03539220d320486a4d3
 
 Finally, the server itself could behave maliciously. Since passwords are almost always sent to the server without hashing, the server can see all passwords in plaintext. Furthermore, since many users use the same passwords to access multiple sites, a malicious server can simply take this password and other identifiable information about a user (like his or her email) and in turn fraudulently access the victim's accounts on a wide variety of services.
 
@@ -100,7 +104,7 @@ This difference between zero knowledge proofs and traditional interactive proofs
 A server running a zero knowledge web authentication system would provide additional resilience against an adversary listening in on server-client messages\cite{Goldwasser}.  Furthermore, the probabilistic nature of zero knowledge proofs is not an issue; in particular, even current client-authentication schemes are not perfectly error-free, as the adversary can simply guess the right password by chance.
 
 \section{Original Protocol}
-We implement a protocol heavily based on the zero knowledge authentication scheme described by Lum Jia Jun\cite{Lum}.  We briefly discuss it here to establish notation and correctness. 
+The protocol for zero knowledge authentication that our implementation is based on was described by Lum Jia Jun\cite{Lum}.  We briefly discuss it here to establish notation and correctness. 
 
 \subsection{Setup}
 
@@ -116,7 +120,7 @@ When the server first loads the authentication system, it generates a public key
  \label{fig:registration}
 \end{figure}
 
-When a user registers by entering a username and password, the client obtains the server's public key.  Let the hash of the password be $x$; the client computes $Y = g_0 ^ x$ and sends the pair (username, $Y$) to the server.  It is important to note the server does not receive the password during registration, and assuming the difficulty of the discrete logarithm problem in $G$, does not receive useful information in determining $x$.  We will refer to $Y$ as the user's public key.\cite{Lum}
+When a user registers by entering a username and password, the client obtains the server's public key.  Let the hash of the password be $x$; the client computes $Y = g_0 ^ x$ and sends the pair (username, $Y$) to the server.  In particular, the server does not receive the password during registration, and assuming the difficulty of the discrete logarithm problem in $G$, does not receive useful information in determining $x$.  We will refer to $Y$ as the user's public key.\cite{Lum}
 
 
 \subsection{Authentication}
@@ -190,7 +194,13 @@ Another feature we considered but did not implement is rate limiting; that is, i
 Furthermore, although our implementation is secure from replay attacks, it is still vulnerable to session hijacking if the website is not using HTTPS. This type of attack occurs when a malicious user steals the session ID from a legitimate user and uses sets it in his own cookie to impersonate the victim.
 
 \section{Implementation Issues}
-NARWHAL requires some form of client-side processing. We had numerous options for this; notably, these included applets and trusted third party devices or websites. We ultimately implemented NARWHAL using JavaScript for client side computation, but other options provided unique potential benefits. A brief summary of each of our options for client-side computation follows:
+NARWHAL requires some form of client-side processing. We had numerous options for this; notably, these come in two flavors: the solutions that integrate into the website (requiring no user work), and the solutions that make it easier for the user to calculate the response from the challenge. We ultimately implemented NARWHAL using JavaScript for client side computation, but other options provided unique potential benefits. A brief summary of each of our options for client-side computation follows on the next page.
+
+We chose JavaScript as it integrates most seamlessly and requires the least work from the user. Javascript, although some users disable JavaScript with applications like NoScript. According to Yahoo in 2010, around $2\%$ of users have JavaScript disabled. \cite{Zakas}
+
+Fortunately, our options for client-side communication are not mutually exclusive; if a user has JavaScript disabled, they can use a trusted third party website and perform the calculation themselves and then manually enter their response to the challenge.
+
+Unfortunately, despite being the option we deemed the most attractive for its simplicity, JavaScript has its own set of difficulties.  In the course of our efforts to implement NARWHAL, we discovered that JavaScript's library support for cryptographic functions is poorly developed, and often even some commonly used libraries proved buggy.  One functionality NARWHAL required in particular was support for large integers.  The large integer library we found and utilized based on recommendations within the JavaScript user community, available online at \url{http://leemon.com/crypto/BigInt.js}, does not support operations on negative numbers.  Such numbers appeared frequently while computing the client's response to the challenge, and forced us to perform inelegant hacks to code ‘around' the library.
 
 \small
 \begin{center}
@@ -199,12 +209,16 @@ NARWHAL requires some form of client-side processing. We had numerous options fo
     Technology & Pros & Cons \\ \hline
     \vspace{.4cm}
     \textbf{Javascript}
-    Each website could have JavaScript, which automatically processes the challenge, username, and password to produce a response. & 
+    Each website could have a JavaScript script which automatically processes the challenge, username, and password to produce a response. & 
 
     \begin{itemize}[leftmargin=*]
-    \item  Seamless integration and best user experience
+    \item Seamless integration
 
-    \item  Supported by all modern browsers
+    \item Transparent to user
+
+    \item Supported by all modern browsers
+
+    \item Excellent mobile support
     \end{itemize}
     &
     \begin{itemize}[leftmargin=*]
@@ -229,8 +243,8 @@ NARWHAL requires some form of client-side processing. We had numerous options fo
 
     \\ \hline
     \vspace{.4cm}
-    \textbf{Browser Extention}
-    A browser extension could allow the user to easily calculate the response from a challenge, either by manual form entry or by scraping the web page.
+    \textbf{Browser Extension}
+    A browser extension could provide an interface that allows the user to easily calculate the response from a challenge, either by manual form entry or by scraping the web page.
 
     &
     \begin{itemize}[leftmargin=*]
@@ -286,16 +300,9 @@ NARWHAL requires some form of client-side processing. We had numerous options fo
 
 \normalsize
 
-We chose JavaScript as it integrates most seamlessly and requires the least work from the user. Javascript, although some users disable JavaScript with applications like NoScript. According to Yahoo in 2010, around $2\%$ of users have JavaScript disabled. \cite{Zakas}
-
-Fortunately, our options for client-side communication are not mutually exclusive; if a user has JavaScript disabled, they can use a trusted third party website and perform the calculation themselves and then manually enter their response to the challenge.
-
-Unfortunately, despite being the option we deemed the most attractive for its simplicity, JavaScript has its own set of difficulties.  In the course of our efforts to implement NARWHAL, we discovered that JavaScript's library support for cryptographic functions is poorly developed, and often even some commonly used libraries proved buggy.  One functionality NARWHAL required in particular was support for large integers.  The large integer library we found and utilized based on recommendations within the JavaScript user community, available online at \url{http://leemon.com/crypto/BigInt.js}, does not support operations on negative numbers.  Such numbers appeared frequently while computing the client's response to the challenge, and forced us to perform inelegant hacks to code ‘around' the library.
-
-
 \section{Potential Remaining Vulnerabilities}
 
-The protocol as posed by Lum Jia Jun, and as we have implemented, still shares one weakness with a traditional hashed-password protocol where the server does not use salts.  An attacker, targeting a specific server and username, could precompute values of the public key for a list of common passwords, e.g. as a rainbow table.  Then, if the attacker obtained access to the database, he would instantly be able to determine via lookup what the targeted user's password was.  In traditional schemes, salting prevents attacks like this.  However, since the server retains effectively no information about the user's password, the only ways for the client to add a salt in this current protocol are to receive it from the server every time or to store it locally after receiving it at registration time.  Neither modification is appealing: the first is trivially vulnerable to an attacker impersonating the user, and the second relies on the user always having access to the registration device.
+The protocol both as posed by Lum Jia Jun and as we have implemented still shares one weakness with a traditional hashed-password protocol where the server does not use salts.  An attacker, targeting a specific server and username, could precompute values of the public key for a list of common passwords, e.g. as a rainbow table.  Then, if the attacker obtained access to the database, he would instantly be able to determine via lookup what the targeted user's password was.  In traditional schemes, salting prevents attacks like this.  However, since the server retains effectively no information about the user's password, the only ways for the client to add a salt in this current protocol are to receive it from the server every time or to store it locally after receiving it at registration time.  Neither modification is appealing: the first is trivially vulnerable to an attacker impersonating the user, and the second relies on the user always having access to the registration device.
 
 Note that this attack doesn't allow the adversary to avoid performing the work of cracking the password.  Rather, it moves the work of discovering a user's password to before the adversary obtains access to the servers.  In this way, a targeted user's account information can be retrieved more rapidly, which potentially lets the attacker access user information before an user is alerted of possible database theft.
 
