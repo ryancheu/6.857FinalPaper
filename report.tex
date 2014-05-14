@@ -183,7 +183,7 @@ Currently, random challenges do not expire with time; instead, the session token
 
 \subsection{Other Features of Note}
 
-Another feature we considered but did not implement is rate limiting; that is, if multiple failed login attempts on a single user occur, we would “lock” a user's account and prevent it from being accessed for a short period of time. We decided that this was a negligible risk because the randomized nature of the challenges would keep the requisite number of iterations to brute force a password very high. In particular, on a website with limited computation power like ours, any attempt to brute force a user's password by repeatedly attempting authorization would result in our server crashing from high traffic flow.
+Another feature we considered but did not implement is rate limiting; that is, if multiple failed login attempts on a single user occur, we would ``lock'' a user's account and prevent it from being accessed for a short period of time. We decided that this was a negligible risk because the randomized nature of the challenges would keep the requisite number of iterations to brute force a password very high. In particular, on a website with limited computation power like ours, any attempt to brute force a user's password by repeatedly attempting authorization would result in our server crashing from high traffic flow.
 
 Furthermore, although our implementation is secure from replay attacks, it is still vulnerable to session hijacking if the website is not using HTTPS. This type of attack occurs when a malicious user steals the session ID from a legitimate user and uses sets it in his own cookie to impersonate the victim.
 
@@ -309,25 +309,25 @@ The next step for our work with NARWHAL is to package the system as a Rails gem,
 
 \begin{thebibliography}{9}
 \bibitem{Adleman}
-Adleman, Leonard M. "The function field sieve." Algorithmic number theory (1994): 108-121.
+Adleman, Leonard M. ``The function field sieve.'' Algorithmic number theory (1994): 108-121.
 
 \bibitem{Donohue}
-Donohue, Brian. “Cupid Media Spills Database of 42 Million Passwords.” Threatpost. Threatpost, 20 Nov. 2013. Web. 13 May 2014.
+Donohue, Brian. ``Cupid Media Spills Database of 42 Million Passwords.'' Threatpost. Threatpost, 20 Nov. 2013. Web. 13 May 2014.
 
 \bibitem{Goldwasser}
-Goldwasser, Shafi, Silvio Micali, and Charles Rackoff. "The knowledge complexity of interactive proof systems." SIAM Journal on computing 18.1 (1989): 186-208.
+Goldwasser, Shafi, Silvio Micali, and Charles Rackoff. ``The knowledge complexity of interactive proof systems.'' SIAM Journal on computing 18.1 (1989): 186-208.
 
 \bibitem{Lum}
-Lum Jia Jun, Brandon. ”Implementing zero-knowledge authentication with zero knowledge,” in The Python Papers Monograph 2.9 (2010).
+Lum Jia Jun, Brandon. ``Implementing zero-knowledge authentication with zero knowledge,'' in The Python Papers Monograph 2.9 (2010).
 
 \bibitem{Wu}
-Wu, Thomas D. "The Secure Remote Password Protocol." NDSS Mar. 1998: 97-111.
+Wu, Thomas D. ``The Secure Remote Password Protocol.''NDSS Mar. 1998: 97-111.
 
 \bibitem{Zakas}
-Zakas, Nicholas. “How many users have Javascript disabled?” Yahoo. Yahoo, 13 Oct. 2010. Web. 13 May 2014.
+Zakas, Nicholas. ``How many users have Javascript disabled?'' Yahoo. Yahoo, 13 Oct. 2010. Web. 13 May 2014.
 
 \bibitem{Zhou}
-Zhou, Minqi et al. "Services in the cloud computing era: A survey." Universal Communication Symposium (IUCS), 2010 4th International 18 Oct. 2010: 40-46.
+Zhou, Minqi et al. ``Services in the cloud computing era: A survey.'' Universal Communication Symposium (IUCS), 2010 4th International 18 Oct. 2010: 40-46.
 
 \end{thebibliography}
 
