@@ -130,31 +130,32 @@ When a user registers by entering a username and password, the client obtains th
 
 To authenticate, the server first generates, stores, and sends the user a challenge in the form of a random number a.  The user then inputs a username and password, and the client calculates the following values:
 \begin{itemize}
-  \item {\em x} the hash of the password the user entered, and $Y = g_0x$
-  \item {\em r} a private random number specific to this authentication attempt
-  \item {\em T} = $Y_r$
+  \item {\em x} = $hash(password)$
+  \item {\em Y} = $g_0 ^ x$
+  \item {\em r}, a private random number specific to this authentication attempt
+  \item {\em T} = $g_0 ^ r$
   \item {\em c} = $hash(Y || T || a)$
   \item {\em z} = $r - cx$
 \end{itemize}
-The client then communicates the pair (c, z) to the server.  We call this pair the user's response.
+The client then sends the pair (c, z) to the server; we call this pair the user's response.
 
 
-To confirm the user's identity, the server needs only to confirm the computation of $c$.  The server knows both $Y$ and $a$.  To verify $c$, the server must compute $T' = Y^cg_0^z$.  If $hash(Y || T' || a)$ matches the value of $c$ provided by the user, the server accepts authentication.\cite{Lum}
+To confirm the user's identity, the server only needs to confirm the computation of $c$.  Since the server knows both $Y$ and $a$, the server can compute $T' = Y^cg_0^z$.  If $hash(Y || T' || a)$ matches the value of $c$ provided by the user, the server accepts the authentication attempt.\cite{Lum}
 
 \subsection{Correctness}
 
-For a correctly entered password, $T' Y^cg_0z = g_0^{xc + r - cx} = g_0^r = T$, and the server's value of $Y$ will match the value computed by the user.  Thus, the two values of $c$ should also match.  So when the user provides valid credentials, the server will always authenticate correctly.  Refer to Lum Jia Jun's original paper for a more in-depth discussion of correctness and security.
+For a correctly entered password, $T' Y^cg_0z = g_0^{xc + r - cx} = g_0^r = T$, and the server's value of $Y$ will match the value computed by the user.  Thus, the two values of $c$ will also match and the server will always authenticate correctly if given valid credentials.  Refer to Lum Jia Jun's original paper for a more in-depth discussion of correctness and security.
 
 
 \section{Advantages}
 
-Earlier, we discussed some of the problems of the current login system.  In this section we'll discuss how our system provides solutions to these problems.
+Earlier, we discussed some of the problems with the current login systems.  In this section we'll discuss how our system provides solutions to these problems.
 
-The first issue with the traditional login system was the brute force attack on the system.  NARWAL makes brute forcing the password from the information stored on the server somewhat harder.  In a benchmarking test we ran using C++ with OpenSSL to compute SHA256 hashes, and GMP to compute the modular exponentiation on large numbers.  In this test, adding the modular exponentiation requirement increased the running time by a factor of 8. The source code for the test can be found at \url{https://gist.github.com/ryancheu/d2e9fa0432c885e0526c}.  Part of this slowdown is due to the use of numbers larger than 64 bits, meaning that we had to use big number libraries to compute the modular exponentiation.
+The first issue with traditional login systems occurs when the database is compromised. If passwords are insecurely stored in this database, NARWHAL fares much better; the public keys stored by NARWHAL are intrinsically hard to invert and less vulnerable to rainbow tables. If passwords are securely hashed and salted, NARWHAL makes brute forcing the password from the information stored on the server linearly harder. In a benchmarking test, we used C++ with OpenSSL to compute SHA256 hashes and GMP to compute modular exponentiation on large numbers.  Adding the modular exponentiation requirement increased the running time by a factor of 8. The source code for the test can be found at \url{https://gist.github.com/ryancheu/d2e9fa0432c885e0526c}.  Part of this slowdown is due to the use of numbers larger than 64 bits, meaning that we had to use big number libraries to compute the modular exponentiation.
 
-Another vulnerability of the classical scheme are replay attacks, where an eavesdropper captures valid authentication credentials over a network and replays them to the server at a later time to gain access. Zero knowledge authentication, however, is not susceptible to such attacks.  The login process is randomized, so intercepted credentials are only valid once and in turn do not allow an eavesdropper access with further login attempts.  The information sent to login is also not useful to an adversary without significant computing power.  This means that a password cannot be discovered by intercepting user verification, whereas many sites currently send login information in plaintext.
+Another vulnerability of the classical scheme is replay attacks, where an eavesdropper captures valid authentication credentials over a network and replays them to the server at a later time to gain access. Zero knowledge authentication, however, is not susceptible to such attacks.  The login process is randomized, so intercepted credentials are only valid once and in turn do not allow an eavesdropper access with further login attempts.  The information sent to login is also not useful to an adversary without significant computing power.  This means that a password cannot be discovered by intercepting user verification; in contrast, many sites currently send login information in plain text.
 
-Additionally, a user can verify that their information is stored securely, since the server never gains direct access to the user's password in the first place.  Right now, the user has no way to know that the server they're authenticating with is not storing their password in plaintext.  With zero knowledge authentication, the user knows how their password is being stored, and that rogue sites can't steal their passwords.
+Finally, a user can verify that their information is stored securely, since the server never gains direct access to the user's password in the first place.  Right now, the user has no way to know that the server they're authenticating with is not storing their password insecurely or copying it for malicious uses.  With zero knowledge authentication, however, the user can verify that their password is never sent in a readable form and thus ascertain that their password is not being stored or misused.
 
 \section{Our Implementation}
 
