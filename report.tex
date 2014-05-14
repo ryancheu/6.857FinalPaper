@@ -132,7 +132,7 @@ When a user registers by entering a username and password, the client obtains th
  \label{fig:authentication}
 \end{figure}
 
-To authenticate, the server first generates, stores, and sends the user a challenge in the form of a random number a.  The user then inputs a username and password, and the client calculates the following values:
+To authenticate, the server first generates, stores, and sends the user a challenge in the form of a random number $a$, tying it to the user's username.  The user then inputs a password, and the client calculates the following values:
 \begin{itemize}
   \item {\em x} = $hash(password)$
   \item {\em Y} = $g_0 ^ x$
@@ -141,7 +141,7 @@ To authenticate, the server first generates, stores, and sends the user a challe
   \item {\em c} = $hash(Y || T || a)$
   \item {\em z} = $r - cx$
 \end{itemize}
-The client then sends the pair (c, z) to the server; we call this pair the user's response.
+The client then sends the pair $(c, z)$ to the server; we call this pair the user's response.
 
 
 To confirm the user's identity, the server only needs to confirm the computation of $c$.  Since the server knows both $Y$ and $a$, the server can compute $T' = Y^cg_0^z$.  If $hash(Y || T' || a)$ matches the value of $c$ provided by the user, the server accepts the authentication attempt.\cite{Lum}
