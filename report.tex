@@ -33,7 +33,7 @@
 
 
 % Title
-{ \huge \bfseries NARWAL \\[0.4cm] }
+{ \huge \bfseries NARWHAL \\[0.4cm] }
 {\Large An Implmentation of Zero Knowledge Authentication}\\[0.5cm]
 
 
@@ -68,38 +68,39 @@ Alexander Jaffe \\
 
 \section{Abstract}
 
-In this paper, we discuss our implementation of an alternative login system for websites that utilizes a challenge-response model based on zero knowledge proofs.  Our system, called NARWHAL, aims to harden a website's authentication system against eavesdropping passive adversaries.  In the course of implementing this system, we have discovered some significant practical shortcomings.  We outline some weaknesses of current login systems, provide a sketch of the protocol (which was originally posed by Lum Jia Jun), discuss implementation issues and tradeoffs, and comment on potential remaining vulnerabilities.
+In this paper, we discuss our implementation of an alternative login system for websites that utilizes a challenge-response model based on zero knowledge proofs.  Our system, called NARWHAL, aims to harden a website's authentication system against eavesdropping passive adversaries.  In the course of implementing this system, we have discovered several significant practical shortcomings.  We outline some weaknesses of current login systems, provide a sketch of the protocol (which was originally posed by Lum Jia Jun), discuss implementation issues and tradeoffs, and comment on potential remaining vulnerabilities.
 
 \section{Introduction}
 
-Zero knowledge authentication schemes explore the use of zero knowledge interactive proofs as an alternative model for user authentication.  There are several potential weaknesses to the current canonical model of web authentication, and zero knowledge authentication schemes solve some of these problems cleanly.  We have implemented such a scheme as a system called NARWHAL; we used Ruby on Rails server-side with JavaScript for client-side computations.
+Zero knowledge authentication schemes explore the use of zero knowledge interactive proofs as an alternative model for user authentication.  There are several potential weaknesses to the current canonical model of web authentication, and zero knowledge authentication schemes solve some of these problems cleanly.  We have implemented such a scheme as a system called NARWHAL; our server runs Ruby on Rails and we use JavaScript for client-side computation.
 
-In the course of implementing NARWHAL, we determined that a zero knowledge authentication scheme, or indeed challenge-response authentication schemes in general, could be implemented with little detriment to the user experience.  However, we also discovered several obstacles that impeded our implementation.  In particular, NARWHAL relies heavily on the user having active JavaScript, and even then, we lacked the desired functionality for some cryptographic operations due to a lack of appropriate JavaScript libraries.  In this paper, we outline the system we implemented, on both a theoretical and practical level, while discussing advantages of zero knowledge authentication as well as potential downsides and roadblocks.
+In the course of implementing NARWHAL, we determined that a zero knowledge authentication schemes and  most challenge-response authentication schemes could be implemented with little detriment to the user experience.  However, we also discovered several obstacles that impeded our implementation.  In particular, NARWHAL relies heavily on the user having JavaScript enabled in their browser; even then, we lacked the desired functionality for some cryptographic operations due to a lack of available JavaScript libraries.  In this paper, we outline the system we implemented on both a theoretical and practical level, while discussing both advantages and disadvantages of zero knowledge authentication.
 
 
 \section{Issues with the Current Hashed-Password System}
 
-Most current web authentication solutions work through a username / password form submission.  In most cases, the password is sent as plain text, sometimes through an SSL connection.  On the server, the password is hashed and compared to a stored hash.  Most systems also use a process called salting in which random bits are added to the end of the password before it is hashed to prevent attacks through pre-computed hash tables\cite{Zhou}.  There are several major attack vectors for the current system.
+Most current web authentication solutions use a login form, which sends the username and password to the server as a HTTP request.  In most cases, the password is sent in plain text; sometimes, this plain text password is sent through an SSL connection.  On the server, the password is hashed and compared to a stored hash.  Most systems also use a process called salting in which random bits are added to the end of the password before it is hashed to prevent attacks through pre-computed hash tables\cite{Zhou}.  There are several major attack vectors for this current system.
 
-The first major attack vector is brute-force hash cracking\cite{Lum}.  In this attack, the adversary has somehow gained access to the hash of the password, usually by compromising the server storing the password hashes.  Once the adversary has access to the password hashes, they hash many common passwords to see which hash matches and thus determine the original plaintext password.  A user can protect against this attack by choosing a password is difficult to guess, and the server can protect against attacks by choosing a sufficiently secure hashing algorithm and good salts.
+The first major vector is brute-force hash cracking\cite{Lum}.  In this attack, the adversary has gained access to the hash of the password, usually by compromising the server storing the password hashes.  Once the adversary has access to the password hashes, they hash many common passwords to see which hash matches and thus determine the original plaintext password.  A user can protect against this attack by choosing a password is difficult to guess, and the server can protect against attacks by choosing a sufficiently secure hashing algorithm and good salts.
 
-Another possible attack is wire sniffing, where a malicious entity listens in on the client's connection to the server and reads the password that's sent over the network\cite{Lum}.  Even if the password is hashed before it is sent to the server, it is possible to replay the hashed password to impersonate the user.  The worst situation, however, occurs when the user is authenticating with a server over HTTP (not HTTPS) over an unsecured network, such as public Wi-Fi.  In this situation it would be trivial for an attacker to gain access to the password by sniffing the packets sent over the network. Most large sites use SSL for authentication, but there are still some that do not.  For example, the Forbes website (\url{http://www.forbes.com/}) does not log in over HTTPS as of May 2014.
+A second possible attack is wire sniffing, where a malicious entity listens in on the client's connection to the server and reads the password that's sent over the network\cite{Lum}. Most large sites use SSL for authentication, which encrypts this connection and makes it more difficult for listeniers to read any data; however, some still do not. For example, as of May 2014, the Forbes website (\url{http://www.forbes.com/}) does not log in over HTTPS. If a user were to authenticate with a server over HTTP (not HTTPS) on an unsecured network, such as public Wi-Fi, it would be trivial for an attacker to gain access to the password by sniffing the completely unencrypted packets being sent on the network. 
 
-Thirdly, the server itself could behave maliciously. Since passwords are very frequently sent to the server without hashing (as is most frequently done), the server can see all passwords in plaintext. Since many users recycle passwords across multiple sites, a malicious server can simply take this plaintext password and other identifiable information about a user (like his or her email) and fraudulently access his or her accounts on other servers.
+Additionally, several high-profile password thefts in recent years have occurred when servers stored passwords insecurely (in particular, in plain text or hashed without salting) and then been compromised.  This has been the most publicized form of large-scale password leakage.  When a user sends a password in plaintext and the server does not store this password securely, such catastrophic scenarios may occur.  In January 2013, the servers of dating network Cupid Media were compromised, resulting in the theft of a staggering 42 million unencrypted passwords.  \cite{Donohue}
 
-Finally, several high-profile password thefts in recent years have occurred when servers stored passwords insecurely (in particular, as plaintext or without salting) and thereafter being compromised.  This has been the most publicized form of large-scale password leakage.  When a user sends a password in plaintext, and the server does not follow the discipline of storing this password securely at all times, this catastrophic scenario has the potential to occur.  For example, as recently as January 2013, the servers of dating network Cupid Media were compromised, resulting in the theft of a staggering 42 million plaintext passwords.  \cite{Donohue}
-In order to ameliorate these threats, we propose a randomized authentication system based on zero knowledge proofs. As a result of this, no information that can be used to recover the password for free will never be transmitted and each login attempt will be different, resulting in a system that is, overall, more secure.
+Finally, the server itself could behave maliciously. Since passwords are almost always sent to the server without hashing, the server can see all passwords in plaintext. Since many users use the same passwords to access multiple sites, a malicious server can simply take this password and other identifiable information about a user (like his or her email) and fraudulently access the victim's accounts on a wide variety of services.
+
+In order to ameliorate these threats, we propose a randomized authentication system based on zero knowledge proofs. This will prevent any information that can be used to easily recover the password from ever be transmitted; furthermore, each login attempt will be different, resulting in a system that is, overall, more secure.
 
 \section{Zero Knowledge Proofs and Applications to Authentication}
 
-Canonical interactive proof systems consist of two parties: a Verifier and a Prover\cite{Goldwasser}.  A Verifier presents an instance of a problem to a Prover, and the Prover must provide a verifiable solution.  Zero knowledge proofs are a variant on this model, wherein the Prover must provide evidence for the solution's existence without giving away any information about the solution that the Verifier would be unable to compute quickly.  Inherently, zero knowledge proofs are probabilistic: in most zero knowledge proof systems, the Prover can only provide a certificate that demonstrates that he is likely to know the solution; the Verifier obtains confidence through repeated iterations.
+Canonical interactive proof systems involve two parties: a Verifier and a Prover\cite{Goldwasser}.  A Verifier presents an instance of a problem to a Prover, and the Prover must provide a verifiable solution. Zero knowledge proofs are a variant on this model, where the Prover provides evidence for the solution's existence without giving away any information about the solution that the Verifier would be unable to compute quickly.  Inherently, zero knowledge proofs are probabilistic: in most zero knowledge proof systems, the Prover can only provide a certificate that demonstrates that he is likely to know the solution; the Verifier obtains confidence through repeated iterations.
 
 This difference between zero knowledge proofs and traditional interactive proofs mirrors the difference between zero knowledge authentication and current login systems.  A zero knowledge authentication scheme would encode the user's identity (e.g. username and password) as a hard problem, and use an interactive zero knowledge proof model to authenticate.
 
 A server running a zero knowledge web authentication system would provide additional resilience against an adversary listening in on server-client messages\cite{Goldwasser}.  Furthermore, the probabilistic nature of zero knowledge proofs is not an issue; in particular, even current client-authentication schemes are not perfectly error-free, as the adversary can simply guess the right password by chance.
 
 \section{Original Protocol}
-The protocol for zero knowledge authentication which our implementation is based on was described by Lum Jia Jun\cite{Lum}.  We briefly discuss it here in order to establish notation and correctness. 
+The protocol for zero knowledge authentication that our implementation is based on was described by Lum Jia Jun\cite{Lum}.  We briefly discuss it here to establish notation and correctness. 
 
 \subsection{Setup}
 
@@ -115,7 +116,7 @@ When the server first loads the authentication system, it generates a public key
  \label{fig:registration}
 \end{figure}
 
-When a user registers by entering a username and password, the client first obtains the server's public key.  Let the hash of the password be $x$; the client computes $Y = g_0x$ and sends the pair (username, $Y$) to the server.  In particular, the server does NOT receive the password during registration, and assuming the difficulty of the discrete logarithm problem in $G$, does not receive useful information in determining $x$.  We will refer to $Y$ as the user's public key.\cite{Lum}
+When a user registers by entering a username and password, the client obtains the server's public key.  Let the hash of the password be $x$; the client computes $Y = g_0 ^ x$ and sends the pair (username, $Y$) to the server.  In particular, the server does not receive the password during registration, and assuming the difficulty of the discrete logarithm problem in $G$, does not receive useful information in determining $x$.  We will refer to $Y$ as the user's public key.\cite{Lum}
 
 
 \subsection{Authentication}
@@ -127,7 +128,7 @@ When a user registers by entering a username and password, the client first obta
  \label{fig:authentication}
 \end{figure}
 
-To authenticate, the server first sends the user a challenge, which is a random number a, while also storing this value.  The user then inputs a username and password, and the client generates the following values:
+To authenticate, the server first generates, stores, and sends the user a challenge in the form of a random number a.  The user then inputs a username and password, and the client calculates the following values:
 \begin{itemize}
   \item {\em x} the hash of the password the user entered, and $Y = g_0x$
   \item {\em r} a private random number specific to this authentication attempt
