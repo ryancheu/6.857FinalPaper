@@ -81,23 +81,23 @@ In the course of implementing NARWHAL, we determined that zero knowledge authent
 
 Most current web authentication solutions use a login form, which sends the username and password to the server as a HTTP request.  In most cases, the password is sent in plain text; sometimes, this plain text password is sent through an SSL connection.  On the server, the password is hashed and compared to a stored hash.  Most systems also use a process called salting in which random bits are added to the end of the password before it is hashed to prevent attacks through pre-computed hash tables\cite{Zhou}.  There are several major attack vectors for this current system.
 
-The first major vector is brute-force hash cracking\cite{Lum}.  In this attack, the adversary has gained access to the hash of the password, usually by compromising the server storing the password hashes.  Once the adversary has access to the password hashes, he hashes many common passwords to see which hash matches and thus determines the original plaintext password.  A user can protect against this attack by choosing a password is difficult to guess, and the server can protect against attacks by choosing a sufficiently secure hashing algorithm and good salts.
+The first major vector is brute-force hash cracking\cite{Lum}.  In this attack, the adversary has gained access to the hash of the password, usually by compromising the server storing the password hashes.  Once the adversary has access to the password hashes, he hashes many common passwords to see which hash matches and thus determines the original plaintext password.  A user can protect against this attack by choosing a password that is difficult to guess, and the server can protect against attacks by choosing a sufficiently secure hashing algorithm and good salts.
 
 A second possible attack is wire sniffing, where a malicious entity listens in on the client's connection to the server and reads the password that's sent over the network\cite{Lum}. Most large sites use SSL for authentication, which encrypts this connection and makes it more difficult for listeniers to read any data; however, some still do not. For example, as of May 2014, the Forbes website (\url{http://www.forbes.com/}) does not log in over HTTPS. If a user were to authenticate with a server over HTTP (not HTTPS) on an unsecured network, such as public Wi-Fi, it would be trivial for an attacker to gain access to the password by sniffing the completely unencrypted packets being sent on the network. 
 
 Additionally, several high-profile password thefts in recent years have occurred when servers stored passwords insecurely (in particular, in plain text or hashed without salting) and then were compromised.  This has been the most publicized form of large-scale password leakage.  When a user sends a password in plaintext and the server does not store this password securely, such catastrophic scenarios may occur.  For example, in January 2013, the servers of dating network Cupid Media were compromised, resulting in the theft of a staggering 42 million unencrypted passwords.  \cite{Donohue}
 
-Finally, the server itself could behave maliciously. Since passwords are almost always sent to the server without hashing, the server can see all passwords in plaintext. Since many users use the same passwords to access multiple sites, a malicious server can simply take this password and other identifiable information about a user (like his or her email) and fraudulently access the victim's accounts on a wide variety of services.
+Finally, the server itself could behave maliciously. Since passwords are almost always sent to the server without hashing, the server can see all passwords in plaintext. Furthermore, since many users use the same passwords to access multiple sites, a malicious server can simply take this password and other identifiable information about a user (like his or her email) and in turn fraudulently access the victim's accounts on a wide variety of services.
 
-In order to ameliorate these threats, we implemented a randomized authentication system based on zero knowledge proofs. This will prevent any information that can be used to easily recover the password from ever be transmitted; furthermore, each login attempt will be different, resulting in a system that is, overall, more secure.
+In order to ameliorate these threats, we implemented a randomized authentication system based on zero knowledge proofs. This system will never transmit information that can be used to easily recover a user's password; furthermore, each login attempt will be different, resulting in a system that is, overall, more secure.
 
 \section{Zero Knowledge Proofs and Applications to Authentication}
 
-Canonical interactive proof systems involve two parties: a Verifier and a Prover\cite{Goldwasser}.  A Verifier presents an instance of a problem to a Prover, and the Prover must provide a verifiable solution. Zero knowledge proofs are a variant on this model, where the Prover provides evidence for the solution's existence without giving away any information about the solution that the Verifier would be unable to compute quickly.  Inherently, zero knowledge proofs are probabilistic: in most zero knowledge proof systems, the Prover can only provide a certificate that demonstrates that he is likely to know the solution; the Verifier obtains confidence through repeated iterations.
+Canonical interactive proof systems involve two parties: a Verifier and a Prover\cite{Goldwasser}.  A Verifier presents an instance of a problem to a Prover, and the Prover must provide a verifiable solution. Zero knowledge proofs are a variant on this model, where the Prover provides evidence for the solution's existence without giving away any easily computable information about the solution.  Inherently, zero knowledge proofs are probabilistic: in most zero knowledge proof systems, the Prover can only provide a certificate that demonstrates he is likely to know the solution; in many instances of these proofs, the Verifier obtains confidence through repeated iterations.
 
 This difference between zero knowledge proofs and traditional interactive proofs mirrors the difference between zero knowledge authentication and current login systems.  A zero knowledge authentication scheme would encode the user's identity (e.g. username and password) as a hard problem, and use an interactive zero knowledge proof model to authenticate.
 
-A server running a zero knowledge web authentication system would therefore provide additional resilience against an adversary listening in on server-client messages\cite{Goldwasser}, as this communication cannot be easily exploited to extract sensitive information. Furthermore, the probabilistic nature of zero knowledge proofs is not an issue; in particular, even current client-authentication schemes are not perfectly error-free, as the adversary can simply get lucky and guess the right password by chance.
+A server running a zero knowledge web authentication system would provide additional resilience against an adversary listening in on server-client messages\cite{Goldwasser}.  Furthermore, the probabilistic nature of zero knowledge proofs is not an issue; in particular, even current client-authentication schemes are not perfectly error-free, as the adversary can simply guess the right password by chance.
 
 \section{Original Protocol}
 The protocol for zero knowledge authentication that our implementation is based on was described by Lum Jia Jun\cite{Lum}.  We briefly discuss it here to establish notation and correctness. 
@@ -128,7 +128,7 @@ When a user registers by entering a username and password, the client obtains th
  \label{fig:authentication}
 \end{figure}
 
-To authenticate, the server first generates, stores, and sends the user a challenge in the form of a random number a.  The user then inputs a username and password, and the client calculates the following values:
+To authenticate, the server first generates, stores, and sends the user a challenge in the form of a random number $a$, tying it to the user's username.  The user then inputs a password, and the client calculates the following values:
 \begin{itemize}
   \item {\em x} = $hash(password)$
   \item {\em Y} = $g_0 ^ x$
@@ -137,7 +137,7 @@ To authenticate, the server first generates, stores, and sends the user a challe
   \item {\em c} = $hash(Y || T || a)$
   \item {\em z} = $r - cx$
 \end{itemize}
-The client then sends the pair (c, z) to the server; we call this pair the user's response.
+The client then sends the pair $(c, z)$ to the server; we call this pair the user's response.
 
 
 To confirm the user's identity, the server only needs to confirm the computation of $c$.  Since the server knows both $Y$ and $a$, the server can compute $T' = Y^cg_0^z$.  If $hash(Y || T' || a)$ matches the value of $c$ provided by the user, the server accepts the authentication attempt.\cite{Lum}
@@ -179,8 +179,7 @@ Unfortunately, we are still unable to salt our public keys with an additional ra
 \subsection{Logging In}
 
 When the user goes to a login page, the server provides the client with a random challenge. The client runs the \texttt{addCandZToForm} function to calculate the response, and then sends the username and response to the server. The server verifies these using the stored public key and the random challenge.
-
-The random challenge here is stored in a user's session tokens. These session tokens are bound to a single session; the same user logging in from two different computers will therefore have different session tokens. The ID of a session token (which is a random value corresponding to a single session) is stored in a cookie; when a web request is made, the server looks at this ID to retrieve the other information in a session token.
+The random challenge here is stored in a user's session tokens. These session tokens are bound to a single session; the same user logging in from two different computers will therefore have different session tokens. The ID of a session token is stored in a cookie; when a web request is made, the server looks at this ID to retrieve the other information in a session token.
 
 Currently, random challenges do not expire with time; instead, the session token stores only the most recent random challenge. Every authentication - successful or not - resets this challenge, preventing malicious users from brute forcing a valid response to a randomized challenge.
 
@@ -188,7 +187,7 @@ Currently, random challenges do not expire with time; instead, the session token
 
 Another feature we considered but did not implement is rate limiting; that is, if multiple failed login attempts on a single user occur, we would ``lock'' a user's account and prevent it from being accessed for a short period of time. We decided that this was a negligible risk because the randomized nature of the challenges would keep the requisite number of iterations to brute force a password very high. In particular, on a website with limited computation power like ours, any attempt to brute force a user's password by repeatedly attempting authorization would result in our server crashing from high traffic flow.
 
-Furthermore, although our implementation is secure from replay attacks, it is still vulnerable to session hijacking if the website is not using HTTPS. This type of attack occurs when a malicious user steals the session ID from a legitimate user and uses sets it in his own cookie to impersonate the victim. HTTPS prevents this by encrypting the connection, making it harder for a user listening to the network to sniff out the session ID.
+Furthermore, although our implementation is secure from replay attacks, it is still vulnerable to session hijacking if the website is not using HTTPS. This type of attack occurs when a malicious user steals the session ID from a legitimate user and uses sets it in his own cookie to impersonate the victim.
 
 \section{Implementation Issues}
 NARWHAL requires some form of client-side processing. We had numerous options for this; notably, these come in two flavors: the solutions that integrate into the website (requiring no user work), and the solutions that make it easier for the user to calculate the response from the challenge. We ultimately implemented NARWHAL using JavaScript for client side computation, but other options provided unique potential benefits. A brief summary of each of our options for client-side computation follows on the next page.
