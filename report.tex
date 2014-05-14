@@ -182,7 +182,8 @@ Another feature we considered but did not implement is rate limiting; that is, i
 
 Furthermore, although our implementation is secure from replay attacks, it is still vulnerable to session hijacking if the website is not using HTTPS. This type of attack occurs when a malicious user steals the session ID from a legitimate user and uses sets it in his own cookie to impersonate the victim.
 
-
+\section{Implementation Issues}
+NARWHAL requires some form of client-side processing. We had numerous options for this; notably, these included applets and trusted third party devices or websites. We ultimately implemented NARWHAL using JavaScript for client side computation, but other options provided unique potential benefits. A brief summary of each of our options for client-side computation follows:
 
 \small
 \begin{center}
