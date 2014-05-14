@@ -96,11 +96,10 @@ Canonical interactive proof systems consist of two parties: a Verifier and a Pro
 
 This difference between zero knowledge proofs and traditional interactive proofs mirrors the difference between zero knowledge authentication and current login systems.  A zero knowledge authentication scheme would encode the user’s identity (e.g. username and password) as a hard problem, and use an interactive zero knowledge proof model to authenticate.
 
-A server running a zero knowledge authentication system would provide additional resilience against an adversary listening in on server-client messages3.  Furthermore, the probabilistic nature of zero knowledge proofs is not an issue; in particular, even current client-authentication schemes are not perfectly error-free, as the adversary can simply guess the right password by chance.
+A server running a zero knowledge web authentication system would provide additional resilience against an adversary listening in on server-client messages3.  Furthermore, the probabilistic nature of zero knowledge proofs is not an issue; in particular, even current client-authentication schemes are not perfectly error-free, as the adversary can simply guess the right password by chance.
 
 \section{Original Protocol}
-
-The protocol for zero knowledge authentication which our implementation is based on was described by Lum Jia Jun.  We briefly discuss it here in order to establish notation and correctness.
+The protocol for zero knowledge authentication which our implementation is based on was described by Lum Jia Jun.2  We briefly discuss it here in order to establish notation and correctness. 
 
 \subsection{Setup}
 
@@ -115,7 +114,9 @@ When the server first loads the authentication system, it generates a public key
  \caption{Registration procedure.}
  \label{fig:registration}
 \end{figure}
-When a user registers by entering a username and password, the client first obtains the server’s public key.  Let the hash of the password be $x$; the client computes $Y = g_0x$ and sends the pair (username, $Y$) to the server.  In particular, the server does NOT receive the password during registration, and assuming the difficulty of the discrete logarithm problem in $G$, does not receive useful information in determining $x$.  We will refer to $Y$ as the user’s public key.
+
+When a user registers by entering a username and password, the client first obtains the server’s public key.  Let the hash of the password be $x$; the client computes $Y = g_0x$ and sends the pair (username, $Y$) to the server.  In particular, the server does NOT receive the password during registration, and assuming the difficulty of the discrete logarithm problem in $G$, does not receive useful information in determining $x$.  We will refer to $Y$ as the user’s public key.2
+
 
 \subsection{Authentication}
 \begin{figure}[h]
@@ -133,10 +134,11 @@ To authenticate, the server first sends the user a challenge, which is a random 
   \item {\em T} = $Y_r$
   \item {\em c} = $hash(Y || T || a)$
   \item {\em z} = $r - cx$
-    
 \end{itemize}
+The client then communicates the pair (c, z) to the server.  We call this pair the user’s response.
 
-To confirm the user’s identity, the server needs only to confirm the computation of $c$.  The server knows both $Y$ and $a$.  To verify $c$, the server must compute $T' = Y^cg_0^z$.  If $hash(Y || T' || a)$ matches the value of $c$ provided by the user, the server accepts authentication.
+
+To confirm the user’s identity, the server needs only to confirm the computation of $c$.  The server knows both $Y$ and $a$.  To verify $c$, the server must compute $T' = Y^cg_0^z$.  If $hash(Y || T' || a)$ matches the value of $c$ provided by the user, the server accepts authentication.\cite{Lum}
 
 \subsection{Correctness}
 
@@ -147,7 +149,7 @@ For a correctly entered password, $T' Y^cg_0z = g_0^{xc + r - cx} = g_0^r = T$, 
 
 Earlier, we discussed some of the problems of the current login system.  In this section we’ll discuss how our system provides solutions to these problems.
 
-The first issue with the traditional login system was the brute force attack on the system.  NARWAL makes brute forcing the password from the information stored on the server somewhat harder.  In a benchmarking test we ran using C++ with OpenSSL to compute SHA256 hashes, and GMP to compute the modular exponentiation on large numbers.  In this test, adding the modular exponentiation requirement increased the running time by 8x. The source code for the test can be found at \url{https://gist.github.com/ryancheu/d2e9fa0432c885e0526c}.  Part of this slowdown is due to the use of numbers larger than 64 bits, meaning that we had to use big number libraries to compute the modular exponentiation.
+The first issue with the traditional login system was the brute force attack on the system.  NARWAL makes brute forcing the password from the information stored on the server somewhat harder.  In a benchmarking test we ran using C++ with OpenSSL to compute SHA256 hashes, and GMP to compute the modular exponentiation on large numbers.  In this test, adding the modular exponentiation requirement increased the running time by a factor of 8. The source code for the test can be found at \url{https://gist.github.com/ryancheu/d2e9fa0432c885e0526c}.  Part of this slowdown is due to the use of numbers larger than 64 bits, meaning that we had to use big number libraries to compute the modular exponentiation.
 
 Another vulnerability of the classical scheme are replay attacks, where an eavesdropper captures valid authentication credentials over a network and replays them to the server at a later time to gain access. Zero-knowledge authentication, however, is not susceptible to such attacks.  The login process is randomized, so intercepted credentials are only valid once and in turn do not allow an eavesdropper access with further login attempts.  The information sent to login is also not useful to an adversary without significant computing power.  This means that a password cannot be discovered by intercepting user verification, whereas many sites currently send login information in plaintext.
 
@@ -170,17 +172,16 @@ When the user registers, the \texttt{generatePublicKey} JavaScript function hash
 
 The client then sends the username and the public key to the server, which stores it into its database and logs the user in.
 
-Unfortunately, we are still unable to salt our public keys with an additional random string. This is further discussed in the “Potential Remaining Vulnerabilities” section.
+Unfortunately, we are still unable to salt our public keys with an additional random string. This is further discussed in the ``Potential Remaining Vulnerabilities'' section.
 
 \subsection{Logging In}
 
 When the user goes to a login page, the server provides the client with a random challenge. The client runs the \texttt{addCandZToForm} function to calculate the response, and then sends the username and response to the server. The server verifies these using the stored public key and the random challenge.
-
 The random challenge here is stored in a user’s session tokens. These session tokens are bound to a single session; the same user logging in from two different computers will therefore have different session tokens. The ID of a session token is stored in a cookie; when a web request is made, the server looks at this ID to retrieve the other information in a session token.
 
 Currently, random challenges do not expire with time; instead, the session token stores only the most recent random challenge. Every authentication - successful or not - resets this challenge, preventing malicious users from brute forcing a valid response to a randomized challenge.
 
-\subsection{Other Features of Notes}
+\subsection{Other Features of Note}
 
 Another feature we considered but did not implement is rate limiting; that is, if multiple failed login attempts on a single user occur, we would “lock” a user’s account and prevent it from being accessed for a short period of time. We decided that this was a negligible risk because the randomized nature of the challenges would keep the requisite number of iterations to brute force a password very high. In particular, on a website with limited computation power like ours, any attempt to brute force a user’s password by repeatedly attempting authorization would result in our server crashing from high traffic flow.
 
