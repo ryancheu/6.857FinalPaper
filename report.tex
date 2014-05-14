@@ -85,15 +85,11 @@ The first major vector is brute-force hash cracking\cite{Lum}.  In this attack, 
 
 A second possible attack is wire sniffing, where a malicious entity listens in on the client's connection to the server and reads the password that's sent over the network\cite{Lum}. Most large sites use SSL for authentication, which encrypts this connection and makes it more difficult for listeniers to read any data; however, some still do not. For example, as of May 2014, the Forbes website (\url{http://www.forbes.com/}) does not log in over HTTPS. If a user were to authenticate with a server over HTTP (not HTTPS) on an unsecured network, such as public Wi-Fi, it would be trivial for an attacker to gain access to the password by sniffing the completely unencrypted packets being sent on the network. 
 
-<<<<<<< HEAD
-Furthermore, there have been several high-profile password thefts in recent years where servers stored passwords insecurely (in particular, in plain text or hashed without salting) and were subsequently compromised.  Such thefts are the most publicized form of large-scale password leakage.  When a user sends a password in plaintext and the server does not store this password securely, such catastrophes may occur.  For instance, in January 2013, the servers of dating network Cupid Media were compromised, resulting in the theft of a staggering 42 million unencrypted passwords.  \cite{Donohue}
-=======
 Additionally, several high-profile password thefts in recent years have occurred when servers stored passwords insecurely (in particular, in plain text or hashed without salting) and then were compromised.  This has been the most publicized form of large-scale password leakage.  When a user sends a password in plaintext and the server does not store this password securely, such catastrophic scenarios may occur.  For example, in January 2013, the servers of dating network Cupid Media were compromised, resulting in the theft of a staggering 42 million unencrypted passwords.  \cite{Donohue}
->>>>>>> 2bea54e356f94a0eb3f8d03539220d320486a4d3
 
 Finally, the server itself could behave maliciously. Since passwords are almost always sent to the server without hashing, the server can see all passwords in plaintext. Furthermore, since many users use the same passwords to access multiple sites, a malicious server can simply take this password and other identifiable information about a user (like his or her email) and in turn fraudulently access the victim's accounts on a wide variety of services.
 
-In order to ameliorate these threats, we propose a randomized authentication system based on zero knowledge proofs. This system never transmit information that can be used to easily recover a user's password; furthermore, each login attempt will be different, resulting in a system that is, overall, more secure.
+In order to ameliorate these threats, we implemented a randomized authentication system based on zero knowledge proofs. This system never transmit information that can be used to easily recover a user's password; furthermore, each login attempt will be different, resulting in a system that is, overall, more secure.
 
 \section{Zero Knowledge Proofs and Applications to Authentication}
 
