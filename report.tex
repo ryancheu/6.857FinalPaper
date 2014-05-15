@@ -195,7 +195,7 @@ NARWHAL requires some form of client-side processing. We had numerous options fo
 
 We chose JavaScript as it integrates most seamlessly and requires the least work from the user. Javascript, although some users disable JavaScript with applications like NoScript. According to Yahoo in 2010, around $2\%$ of users have JavaScript disabled. \cite{Zakas}
 
-Fortunately, our options for client-side communication are not mutually exclusive; if a user has JavaScript disabled, they can use a trusted third party website and perform the calculation themselves and then manually enter their response to the challenge.
+Fortunately, our options for client-side communication are not mutually exclusive; if a user has JavaScript disabled, they can use a some other method to perform the calculation themselves and then manually enter their response to the challenge.
 
 Unfortunately, despite being the option we deemed the most attractive for its simplicity, JavaScript has its own set of difficulties.  In the course of our efforts to implement NARWHAL, we discovered that JavaScript's library support for cryptographic functions is poorly developed, and often even some commonly used libraries proved buggy.  One functionality NARWHAL required in particular was support for large integers.  The large integer library we found and utilized based on recommendations within the JavaScript user community, available online at \url{http://leemon.com/crypto/BigInt.js}, does not support operations on negative numbers.  Such numbers appeared frequently while computing the client's response to the challenge, and forced us to perform inelegant hacks to code ‘around' the library.
 
@@ -229,13 +229,17 @@ Unfortunately, despite being the option we deemed the most attractive for its si
     This is the approach used by the original paper, which used an applet to download a python script which performed the authentication. We believe this solution is strictly inferior to using JavaScript.
     &
     \begin{itemize}[leftmargin=*]
+    \item No extra work from user
+
     \item  Supported by all modern browsers
     \end{itemize}
     &
     \begin{itemize}[leftmargin=*]
     \item Requires a plugin to be installed
 
-    \item Mobile support questionable at best
+    \item Very little mobile support
+
+    \item Requires more trust in website
     \end{itemize}
 
     \\ \hline
@@ -245,13 +249,13 @@ Unfortunately, despite being the option we deemed the most attractive for its si
 
     &
     \begin{itemize}[leftmargin=*]
-    \item Can easily be verified as secure
+    \item Can easily be verified as secure (it can only be changed with the client's knowledge)
 
-    \item Integrates nicely with webpage
+    \item Can integrate nicely with webpage
     \end{itemize}
     &
     \begin{itemize}[leftmargin=*]
-    \item Requires more work by user
+    \item Potentially requires more work by user
 
     \item Needs to be installed for every browser and computer
     \end{itemize}
@@ -263,7 +267,7 @@ Unfortunately, despite being the option we deemed the most attractive for its si
 
     &
     \begin{itemize}[leftmargin=*]
-      \item A downloaded program only needs to be tested once for security.
+      \item Can easily be verified as secure
     \end{itemize}
 
     &
@@ -280,14 +284,15 @@ Unfortunately, despite being the option we deemed the most attractive for its si
     &
 
     \begin{itemize}[leftmargin=*]
-      \item Portable; easily accessible
+      \item Portable
+      \item Easily accessible
     \end{itemize}
 
     &
 
     \begin{itemize}[leftmargin=*]
       \item Requires more work by user
-      \item If this website gets compromised then a lot of sites get compromised.
+      \item Central point of failure.
     \end{itemize}
     
     \\ \hline
