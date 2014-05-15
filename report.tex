@@ -159,7 +159,7 @@ Finally, a user can verify that their information is stored securely, since the 
 
 \section{Our Implementation}
 
-We implemented a website running NARWHAL. Our server is written in Ruby on Rails and sits on a sqlite3 database; the client-side processing is done in JavaScript. Our repository lives at \url{http://github.com/xanderlin/narwhal}.
+We implemented a website running NARWHAL. Our server is written in Ruby on Rails and sits on a sqlite3 database; the client-side processing is done in JavaScript. Our repository lives at \url{http://github.com/xanderlin/narwhal}.  Our demo site is currently online at \url{http://narwhal6857.herokuapp.com/}.
 
 Upon installation, NARWHAL selects a random prime number of at least 512 bits.  Since the best known general discrete logarithm algorithms are $O(|G|^{1/2})$, where $|G|$ is the size of a group $G$, this number provides 256 bits of entropy.\cite{Adleman}  NARWHAL uses the multiplicative group modulo this prime as its cryptographic group.
 
