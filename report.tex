@@ -159,7 +159,7 @@ Finally, a user can verify that their information is stored securely, since the 
 
 \section{Our Implementation}
 
-We implemented a website running NARWHAL. Our server is written in Ruby on Rails and sits on a sqlite3 database; the client-side processing is done in JavaScript. Our repository lives at \url{http://github.com/xanderlin/narwhal}.
+We implemented a website running NARWHAL. Our server is written in Ruby on Rails and sits on a sqlite3 database; the client-side processing is done in JavaScript. Our repository lives at \url{http://github.com/xanderlin/narwhal}.  Our demo site is currently online at \url{http://narwhal6857.herokuapp.com/}.
 
 Upon installation, NARWHAL selects a random prime number of at least 512 bits.  Since the best known general discrete logarithm algorithms are $O(|G|^{1/2})$, where $|G|$ is the size of a group $G$, this number provides 256 bits of entropy.\cite{Adleman}  NARWHAL uses the multiplicative group modulo this prime as its cryptographic group.
 
@@ -226,6 +226,7 @@ Unfortunately, despite being the option we deemed the most attractive for its si
     \vspace{.4cm}
     \textbf{Applets}
     This is the approach used by the original paper, which used an applet to download a python script which performed the authentication. We believe this solution is strictly inferior to using JavaScript.
+    \vspace{.4cm}
     &
     \begin{itemize}[leftmargin=*]
     \item No extra work from user
@@ -280,6 +281,7 @@ Unfortunately, despite being the option we deemed the most attractive for its si
     \vspace{.4cm}
     \textbf{Third Party Website}
     A trusted third party website could function as a service that calculates responses from challenges.
+    \vspace{.4cm}
     &
 
     \begin{itemize}[leftmargin=*]
