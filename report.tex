@@ -181,7 +181,7 @@ Unfortunately, we are still unable to salt our public keys with an additional ra
 When the user goes to a login page, the server provides the client with a random challenge. The client runs the \texttt{addCandZToForm} function to calculate the response, and then sends the username and response to the server. The server verifies these using the stored public key and the random challenge.
 The random challenge here is stored in a user's session tokens. These session tokens are bound to a single session; the same user logging in from two different computers will therefore have different session tokens. The ID of a session token is stored in a cookie; when a web request is made, the server looks at this ID to retrieve the other information in a session token.
 
-Currently, random challenges do not expire with time; instead, the session token stores only the most recent random challenge. Every authentication - successful or not - resets this challenge, preventing malicious users from brute forcing a valid response to a randomized challenge.
+Currently, random challenges do not expire with time; instead, the session token stores only the most recent random challenge. Every authentication attempt - successful or not - resets this challenge, preventing malicious users from brute forcing a valid response to a randomized challenge.
 
 \subsection{Other Features of Note}
 
@@ -196,7 +196,7 @@ We chose JavaScript as it integrates most seamlessly and requires the least work
 
 Fortunately, our options for client-side communication are not mutually exclusive; if a user has JavaScript disabled, they can use a some other method to perform the calculation themselves and then manually enter their response to the challenge.
 
-Unfortunately, despite being the option we deemed the most attractive for its simplicity, JavaScript has its own set of difficulties.  In the course of our efforts to implement NARWHAL, we discovered that JavaScript's library support for cryptographic functions is poorly developed, and often even some commonly used libraries proved buggy.  One functionality NARWHAL required in particular was support for large integers.  The large integer library we found and utilized based on recommendations within the JavaScript user community, available online at \url{http://leemon.com/crypto/BigInt.js}, does not support operations on negative numbers.  Such numbers appeared frequently while computing the client's response to the challenge, and forced us to perform inelegant hacks to code ‘around' the library.
+Unfortunately, despite being the option we deemed the most attractive for its simplicity, JavaScript has its own set of difficulties.  In the course of our efforts to implement NARWHAL, we discovered that JavaScript's library support for cryptographic functions is poorly developed, and often even some commonly used libraries proved buggy.  One functionality NARWHAL required in particular was support for large integers.  The large integer library we found and utilized based on recommendations within the JavaScript user community, available online at \url{http://leemon.com/crypto/BigInt.js}, does not support operations on negative numbers.  Such numbers appeared frequently while computing the client's response to the challenge, and forced us to perform inelegant hacks to code 'around' the library.
 
 \small
 \begin{center}
